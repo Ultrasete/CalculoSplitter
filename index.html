@@ -268,7 +268,7 @@
                              <button onclick="viewProjectMap()" title="Visualizar Mapa" class="bg-blue-600 text-white p-3 rounded-r-md hover:bg-blue-700 transition no-print">
                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.527-1.912 6.01 6.01 0 012.142 4.072 6.01 6.01 0 01-3.668 5.473 1.503 1.503 0 01-1.499.044 2 2 0 00-2.427 0 2 2 0 01-1.527 1.912 6.01 6.01 0 01-3.8-5.57z" clip-rule="evenodd" /></svg>
                              </button>
-                         </div>
+                          </div>
                     </div>
                      <div class="max-w-xs mx-auto mb-6">
                         <label for="olt-power-input-unbalanced" class="font-bold text-lg text-gray-600 text-center block mb-2">Potência OLT</label>
@@ -307,7 +307,7 @@
                              <button onclick="viewProjectMap()" title="Visualizar Mapa" class="bg-blue-600 text-white p-3 rounded-r-md hover:bg-blue-700 transition no-print">
                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.527-1.912 6.01 6.01 0 012.142 4.072 6.01 6.01 0 01-3.668 5.473 1.503 1.503 0 01-1.499.044 2 2 0 00-2.427 0 2 2 0 01-1.527 1.912 6.01 6.01 0 01-3.8-5.57z" clip-rule="evenodd" /></svg>
                              </button>
-                         </div>
+                          </div>
                     </div>
                      <div class="max-w-xs mx-auto mb-6">
                         <label for="olt-power-input-balanced" class="font-bold text-lg text-gray-600 text-center block mb-2">Potência OLT</label>
@@ -337,7 +337,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
                              + CTO
-                         </button>
+                          </button>
                      </div>
                  </div>
             </div>
@@ -534,8 +534,7 @@
             return list.map(key => `<option value="${key}" ${key === selectedValue ? 'selected' : ''}>${key}</option>`).join('');
         }
 
-        // --- FUNÇÃO DE LISTA DE MATERIAIS MOVIDA PARA CIMA ---
-        // CORREÇÃO DE ERRO: A função foi movida para cima para garantir que esteja definida antes de ser chamada na inicialização.
+        // --- FUNÇÃO DE LISTA DE MATERIAIS CORRIGIDA PARA MOBILE ---
         function updateMaterialsList() {
             document.getElementById('active-network-label').textContent = activeTab === 'desbalanceada' ? 'Rede Desbalanceada' : 'Rede Balanceada';
             const table = document.getElementById('materials-table');
@@ -580,7 +579,7 @@
                     }
                 });
                 if (balancedConfig.primarySplitter) {
-                     hubSplitterCounts[balancedConfig.primarySplitter] = 1;
+                      hubSplitterCounts[balancedConfig.primarySplitter] = 1;
                 }
             }
             
@@ -605,7 +604,7 @@
                 { id: 'caixa_emenda_ceo', name: 'Caixa de Emenda (CEO/CDR)', qty: spliceBoxCount, numericQty: spliceBoxCount, editable: true },
                 { id: 'cto_total', name: 'Total de CTOs', qty: ctoCount, numericQty: ctoCount, editable: false },
                 { id: 'fibra_drop_cto', name: 'Fibra Atendimento (16m/CTO)', qty: `${dropFiberPerCto} m`, numericQty: dropFiberPerCto, editable: false },
-                ...Object.entries(hubSplitterCounts).map(([name, count]) => ({ id: `hub_${name.replace(/[^a-zA-Z0-9]/g, '')}`, name: `Splitter ${activeTab === 'balanceada' ? 'Primário' : 'Desb.'} ${name}`, qty: count, numericQty: count, editable: false })), 
+                { id: 'hub_splitters', isGroup: true, items: Object.entries(hubSplitterCounts).map(([name, count]) => ({ id: `hub_${name.replace(/[^a-zA-Z0-9]/g, '')}`, name: `Splitter ${activeTab === 'balanceada' ? 'Primário' : 'Desb.'} ${name}`, qty: count, numericQty: count, editable: false })) },
                 ...Object.entries(ctoSplitterCounts).map(([name, count]) => ({ id: `cto_${name.replace(/[^a-zA-Z0-9]/g, '')}`, name: `Splitter de CTO ${name}`, qty: count, numericQty: count, editable: false })), 
                 { id: 'acoplador', name: 'Acoplador Óptico SC/APC', qty: totalAcopladores, numericQty: totalAcopladores, editable: false },
                 { id: 'bap', name: 'Braçadeira BAP', qty: poleCount, numericQty: poleCount, editable: true }, 
@@ -614,9 +613,19 @@
                 { id: 'roldana', name: 'Roldana', qty: 0, numericQty: 0, editable: true, manual: true }
             ];
             
-            let materialsHtml = '';
+            let flatMaterials = [];
+            otherMaterials.forEach(m => {
+                if(m.isGroup) {
+                   flatMaterials.push(...m.items);
+                } else {
+                   flatMaterials.push(m);
+                }
+            });
+
+            const allStaticMaterials = [...fiberMaterialItems, ...flatMaterials];
             
-            const allStaticMaterials = [...fiberMaterialItems, ...otherMaterials];
+            let materialsHtml = '';
+
             allStaticMaterials.forEach(item => {
                 const unitPrice = materialPrices[item.id] || 0;
                 let itemQty = item.editable ? (manualMaterials[item.id] !== undefined ? parseInt(manualMaterials[item.id], 10) || 0 : item.numericQty) : item.numericQty;
@@ -628,19 +637,20 @@
 
                 const qtyDisplay = item.qty.toString().includes('m') ? item.qty : itemQty;
 
+                // MODIFICAÇÃO AQUI: W-24 (mais largo) e INPUTMODE DECIMAL (teclado numérico) e ONCHANGE (evita pulo do cursor)
                 materialsHtml += `<tr class="border-b">
                     <td class="py-2 px-1 font-semibold align-middle">${item.name}</td>
                     <td class="py-2 px-1 align-middle text-center">
-                        <input type="text" id="price-${item.id}" oninput="saveMaterialPrice(event, '${item.id}', this.value)" value="${unitPrice > 0 ? unitPrice.toFixed(2).replace('.', ',') : ''}" placeholder="0,00" class="w-16 text-center font-bold p-1 border rounded bg-gray-50 focus:bg-white">
+                        <input type="text" inputmode="decimal" id="price-${item.id}" onchange="saveMaterialPrice(event, '${item.id}', this.value)" value="${unitPrice > 0 ? unitPrice.toFixed(2).replace('.', ',') : ''}" placeholder="0,00" class="w-24 text-center font-bold p-2 border rounded bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-base">
                     </td>
                     <td class="py-2 px-1 text-center align-middle">`;
 
                 if (item.editable) {
-                    const onInputHandler = `oninput="saveManualMaterial(event, '${item.id}', this.value)"`;
+                    const onInputHandler = `onchange="saveManualMaterial(event, '${item.id}', this.value)"`;
                     let qtyValue = manualMaterials[item.id] !== undefined ? manualMaterials[item.id] : item.qty;
                      if(item.manual) qtyValue = manualMaterials[item.id] || 0;
 
-                    materialsHtml += `<input type="number" id="input-${item.id}" value="${qtyValue}" ${onInputHandler} class="w-12 text-center font-bold p-1 border rounded bg-gray-50 focus:bg-white">`;
+                    materialsHtml += `<input type="number" id="input-${item.id}" value="${qtyValue}" ${onInputHandler} class="w-16 text-center font-bold p-2 border rounded bg-gray-50 focus:bg-white text-base">`;
                 } else {
                     materialsHtml += `<span class="font-bold text-lg">${qtyDisplay}</span>`;
                 }
@@ -658,10 +668,10 @@
                 materialsHtml += `<tr class="border-b">
                     <td class="py-2 px-1 font-semibold align-middle" contenteditable="true" onblur="handleCustomMaterialChange(event, ${index}, 'name')">${item.name}</td>
                     <td class="py-2 px-1 align-middle text-center">
-                        <input type="text" value="${(item.price || 0).toFixed(2).replace('.', ',')}" oninput="handleCustomMaterialChange(event, ${index}, 'price')" placeholder="0,00" class="w-16 text-center font-bold p-1 border rounded bg-gray-50 focus:bg-white">
+                        <input type="text" inputmode="decimal" value="${(item.price || 0).toFixed(2).replace('.', ',')}" onchange="handleCustomMaterialChange(event, ${index}, 'price')" placeholder="0,00" class="w-24 text-center font-bold p-2 border rounded bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-base">
                     </td>
                     <td class="py-2 px-1 text-center align-middle">
-                        <input type="number" value="${item.qty || 0}" oninput="handleCustomMaterialChange(event, ${index}, 'qty')" class="w-12 text-center font-bold p-1 border rounded bg-gray-50 focus:bg-white">
+                        <input type="number" value="${item.qty || 0}" onchange="handleCustomMaterialChange(event, ${index}, 'qty')" class="w-16 text-center font-bold p-2 border rounded bg-gray-50 focus:bg-white text-base">
                     </td>
                     <td class="py-2 px-1 text-right align-middle font-bold">${subtotal.toFixed(2).replace('.',',')}</td>
                     <td class="py-2 px-1 text-center align-middle">
@@ -920,9 +930,9 @@
                     cardHtml += `<div class="flex items-center w-full mb-1.5 px-2"><label class="flex-1 text-xs font-semibold text-gray-600">${row.label}:</label>`;
                     switch(row.type) {
                         case 'select_hub': cardHtml += `<select id="${elementId}" onchange="handleCtoDataChange(event, ${index}, '${networkType}', 'splitterHub')" class="input-field">${getSplitterOptions('hub', data.splitterHub)}</select>`; break;
-                        case 'select_cto':
+                        case 'select_cto': 
                              const optionsType = isUnbalanced ? 'cto' : 'balanced';
-                             cardHtml += `<select id="${elementId}" onchange="handleCtoDataChange(event, ${index}, '${networkType}', 'splitterCto')" class="input-field">${getSplitterOptions(optionsType, data.splitterCto)}</select>`;
+                             cardHtml += `<select id="${elementId}" onchange="handleCtoDataChange(event, ${index}, '${networkType}', 'splitterCto')" class="input-field">${getSplitterOptions(optionsType, data.splitterCto)}</select>`; 
                              break;
                         case 'result': cardHtml += `<input id="${elementId}" type="text" value="${value || '---'}" readonly class="result-field" />`; break;
                         case 'result_detail': cardHtml += `<div id="${elementId}" class="loss-detail">${value || '---'}</div>`; break;
@@ -1570,36 +1580,17 @@
         function saveManualMaterial(event, id, value) {
             const focusedElementId = event.target.id;
             const selectionStart = event.target.selectionStart;
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                manualMaterials[id] = parseInt(value, 10) || 0;
-                updateMaterialsList();
-                
-                const focusedElement = document.getElementById(focusedElementId);
-                if (focusedElement) {
-                    focusedElement.focus({ preventScroll: true });
-                    focusedElement.setSelectionRange(selectionStart, selectionStart);
-                }
-                triggerAutoSave();
-            }, 500);
+            // Usando debounce apenas para o saveState, a atualização da lista já ocorreu visualmente no onchange
+            manualMaterials[id] = parseInt(value, 10) || 0;
+            updateMaterialsList();
+            triggerAutoSave();
         }
         
         function saveMaterialPrice(event, id, value) {
-            const focusedElementId = event.target.id;
-            const selectionStart = event.target.selectionStart;
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                const price = parseFloat(value.replace(',', '.')) || 0;
-                materialPrices[id] = price;
-                updateMaterialsList();
-                
-                const focusedElement = document.getElementById(focusedElementId);
-                if (focusedElement) {
-                    focusedElement.focus({ preventScroll: true });
-                    focusedElement.setSelectionRange(selectionStart, selectionStart);
-                }
-                triggerAutoSave();
-            }, 500);
+             const price = parseFloat(value.replace(',', '.')) || 0;
+             materialPrices[id] = price;
+             updateMaterialsList();
+             triggerAutoSave();
         }
         
         function addSpliceBox() {
@@ -1771,12 +1762,9 @@
                 }
                 customMaterials[index][field] = value;
                 
-                // Apenas um pequeno atraso para re-renderizar, para não interromper a digitação
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    updateMaterialsList();
-                    triggerAutoSave();
-                }, 500);
+                // Pequeno delay para não interromper a digitação caso seja oninput (aqui usamos onchange, mas mantemos o timer por segurança)
+                updateMaterialsList();
+                triggerAutoSave();
             }
         }
 
